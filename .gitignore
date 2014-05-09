@@ -2,3 +2,7 @@ venv/
 *.swp
 *.pyc
 
+# Don't save Django setting files for the site
+# as this is server specific (like DB Settings).
+
+settings.py
