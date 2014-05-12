@@ -26,6 +26,78 @@
       <script src="{% static 'tagteam/js/html5shiv.js' %}"></script>
       <script src="{% static 'js/respond.min.js' %}"></script>
     <![endif]-->
+
+    <!-- Override CSS -->
+    <style type="text/css">
+        .query-hide {
+            display: none;
+        }
+    </style>
+
+    <!-- Load jQuery -->
+    <script src="{% static 'tagteam/js/jquery.min.js' %}"></script>
+    <script type="text/javascript">
+        var images = new Array();
+        
+        function preload() {
+            for (i=0; i<preload.arguments.length; i++) {
+                images[i] = new Image();
+                images[i].src = preload.arguments[i]
+            }
+        }
+
+        function display_loading() {
+                /*
+                // Hide text
+                $('#mysql-output').addClass('query-hide');
+                $('#cassandra-output').addClass('query-hide');
+
+                // Display loading gif
+                $('#mysql-loading-gif').removeClass('query-hide'); 
+                $('#cassandra-loading-gif').removeClass('query-hide'); 
+                */
+                $('#mysql-output').hide();
+                $('#cassandra-output').hide();
+
+                // Display loading gif
+                $('#mysql-loading-gif').show();
+                $('#cassandra-loading-gif').show();
+
+        }
+
+        function display_results(item, value) {
+                // Hide loading gif
+                $('#' + item + '-loading-gif').hide();
+                
+                // Set text
+                $('#' + item + '-output').text(value);
+
+                // Slide down
+                $('#' + item + '-output').slideToggle(function(){
+                });
+        }
+
+        $(function(){
+            // Preload images
+            preload("{% static 'tagteam/images/loading.gif' %}");
+            
+            // Submit query handler
+            $('#query-form').submit(function(event){
+                event.preventDefault();
+
+                // Display loading to user
+                display_loading();
+
+                // Get query results from server
+                $('#mysql-output').text("mysql id output place holder");
+
+                // Get text from server
+
+                // Display the results to the user this way
+                setTimeout(function(){display_results('mysql', 'woohoo!'); }, 800);
+            });
+        });
+    </script>
   </head>
 
   <body>
@@ -61,9 +133,10 @@
     <div class="jumbotron">
       <div class="container text-center">
         <h1>Enter Hashtag Query Logic</h1>
-          <form class="form-query" role="form">
+          <form class="form-query" id="query-form" role="form" action="{% url 'query:processquery' %}" method="POST">
+            {% csrf_token %}
             <!--<h2 class="form-signin-heading">Please sign in</h2>-->
-            <input type="query" class="form-control" placeholder="Boolean Query: #apple + #orange - #pear" required autofocus>
+            <input type="query" name="query" class="form-control" placeholder="Boolean Query: #apple + #orange - #pear" required autofocus>
             <button class="btn btn-lg btn-primary" style="margin-top: 18px" type="submit">Search</button>
           </form>
       </div>
@@ -74,13 +147,19 @@
       <div class="row">
         <div class="col-md-6">
           <h2>MySQL RDBMS</h2>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <p id="mysql-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
+          <p id="mysql-output">No query submitted. </p>
+          <!--
           <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+          -->
         </div>
         <div class="col-md-6">
           <h2>Cassandra</h2>
-          <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+          <p id="cassandra-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
+          <p id="cassandra-output">No query submitted. </p>
+          <!--
           <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+          -->
        </div>
       </div>
 
@@ -95,7 +174,6 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{% static 'tagteam/js/jquery.min.js' %}"></script>
     <script src="{% static 'tagteam/js/bootstrap.min.js' %}"></script>
   </body>
 </html>
