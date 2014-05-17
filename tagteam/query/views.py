@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import string
 import urllib
 import time
+from configurations import POST_RETURN_LIMIT
 
 # Configuration
 zeus_getpost_url = 'http://zeus.ndnxr.com/query/getpost/'
@@ -38,9 +39,9 @@ def processquery(request):
         if not valid_query:
             return HttpResponse('Invalid query.')
 
-        # Get top 10 most recent post within addset-removeset
+        # Get top POST_RETURN_LIMIT most recent post within addset-removeset
         start = time.time()
-        post_results, err_msg = getposts(addset, removeset, 10) 
+        post_results, err_msg = getposts(addset, removeset, POST_RETURN_LIMIT) 
         end   = time.time()
 
         time_diff = end - start
