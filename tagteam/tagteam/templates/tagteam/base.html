@@ -32,6 +32,12 @@
         .query-hide {
             display: none;
         }
+        .query-form {
+            padding-top: 18px;
+        }
+        #query-submit-button {
+            display: none;
+        }
     </style>
 
     <!-- Load jQuery -->
@@ -47,22 +53,17 @@
         }
 
         function display_loading() {
-                /*
-                // Hide text
-                $('#mysql-output').addClass('query-hide');
-                $('#cassandra-output').addClass('query-hide');
+                // Hide all output areas
+                $('#minerva-mysql-output').hide();
+                $('#minerva-cassandra-output').hide();
+                $('#az-mysql-output').hide();
+                $('#go-cassandra-output').hide();
 
                 // Display loading gif
-                $('#mysql-loading-gif').removeClass('query-hide'); 
-                $('#cassandra-loading-gif').removeClass('query-hide'); 
-                */
-                $('#mysql-output').hide();
-                $('#cassandra-output').hide();
-
-                // Display loading gif
-                $('#mysql-loading-gif').show();
-                $('#cassandra-loading-gif').show();
-
+                $('#minerva-mysql-loading-gif').show();
+                $('#minerva-cassandra-loading-gif').show();
+                $('#az-mysql-loading-gif').show();
+                $('#go-cassandra-loading-gif').show();
         }
 
         function display_results(item, value) {
@@ -70,11 +71,18 @@
                 $('#' + item + '-loading-gif').hide();
                 
                 // Set text
-                $('#' + item + '-output').text(value);
+                $('#' + item + '-output').html(value);
 
                 // Slide down
                 $('#' + item + '-output').slideToggle(function(){
                 });
+        }
+
+        var output_areas = [ 'minerva-mysql', 'minerva-cassandra', 'az-mysql', 'go-cassandra' ];
+        function invalid_query() {
+            $.each(output_areas, function(key){
+                display_results(output_areas[key], 'Invalid query.');
+            });
         }
 
         $(function(){
@@ -92,9 +100,26 @@
                 $('#mysql-output').text("mysql id output place holder");
 
                 // Get text from server
+                var jqxhr = $.post("query/processquery/", 
+                        $('#query-form').serialize()).done(function(json_data){
+                            // Error check
+                            if (json_data.indexOf('Invalid query.') != -1) {
+                                invalid_query();
+                                return;
+                            }
+
+                            var ul = $('<ul>');
+                            $.each(json_data, function(key){
+                                var li = $('<li>')
+                                li.append(json_data[key].pk + ": " + json_data[key].fields.text);
+                                ul.append(li); 
+                            });
+
+                            display_results('minerva-mysql', ul);
+                        });
 
                 // Display the results to the user this way
-                setTimeout(function(){display_results('mysql', 'woohoo!'); }, 800);
+                //setTimeout(function(){display_results('mysql', 'woohoo!'); }, 800);
             });
         });
     </script>
@@ -129,39 +154,72 @@
       </div>
     </div>
 
+    <!-- Search Query Area -->
+    <div class="container text-center query-form">
+      <form class="form-query" id="query-form" role="form" action="{% url 'query:processquery' %}" method="POST">
+        {% csrf_token %}
+        <!--<h2 class="form-signin-heading">Please sign in</h2>-->
+        <input type="query" name="query" class="form-control" placeholder="Boolean Query: #apple + #orange - #pear" required autofocus>
+        <button class="btn btn-lg btn-primary" id="query-submit-button" style="margin-top: 18px" type="submit">Search</button>
+      </form>
+    </div>
+
     <!-- Main jumbotron for a primary marketing message or call to action -->
+    <!--
     <div class="jumbotron">
       <div class="container text-center">
         <h1>Enter Hashtag Query Logic</h1>
           <form class="form-query" id="query-form" role="form" action="{% url 'query:processquery' %}" method="POST">
-            {% csrf_token %}
+    -->
             <!--<h2 class="form-signin-heading">Please sign in</h2>-->
+    <!--
             <input type="query" name="query" class="form-control" placeholder="Boolean Query: #apple + #orange - #pear" required autofocus>
             <button class="btn btn-lg btn-primary" style="margin-top: 18px" type="submit">Search</button>
           </form>
       </div>
     </div>
+    -->
 
     <div class="container">
       <!-- Example row of columns -->
       <div class="row">
         <div class="col-md-6">
-          <h2>MySQL RDBMS</h2>
-          <p id="mysql-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
-          <p id="mysql-output">No query submitted. </p>
+          <h2>MySQL [Single]</h2>
+          <p id="minerva-mysql-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
+          <p id="minerva-mysql-output">No query submitted. </p>
           <!--
           <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
           -->
         </div>
         <div class="col-md-6">
-          <h2>Cassandra</h2>
-          <p id="cassandra-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
-          <p id="cassandra-output">No query submitted. </p>
+          <h2>Cassandra [Single]</h2>
+          <p id="minerva-cassandra-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
+          <p id="minerva-cassandra-output">No query submitted. </p>
           <!--
           <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
           -->
        </div>
       </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <h2>MySQL [Distributed]</h2>
+          <p id="az-mysql-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
+          <p id="az-mysql-output">No query submitted. </p>
+          <!--
+          <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+          -->
+        </div>
+        <div class="col-md-6">
+          <h2>Cassandra [Distributed]</h2>
+          <p id="go-cassandra-loading-gif" class="text-center query-hide"><img src="{% static 'tagteam/images/loading.gif' %}"></p>
+          <p id="go-cassandra-output">No query submitted. </p>
+          <!--
+          <p><a class="btn btn-default" href="#" role="button">View details &raquo;</a></p>
+          -->
+       </div>
+      </div>
+
 
       <hr>
 
