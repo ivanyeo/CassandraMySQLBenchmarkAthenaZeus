@@ -6,5 +6,6 @@ urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
     url(r'^processquery/$', views.processquery, name='processquery'),
     url(r'^getpost/(?P<post_id>\d+)/?$', views.getpost, name='getpost'),
+    url(r'^getzeuspost/(?P<post_id>\d+)/?$', views.getzeuspost, name='getzeuspost'),
 )
 
